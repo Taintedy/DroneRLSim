@@ -9,20 +9,23 @@ using UnityEngine.SceneManagement;
 
 public class DroneMovement : MonoBehaviour
 {
+    public GameObject platform;
     public Vector3 velocity;
     public GameObject lowLim;
     public GameObject higLim;
     private Rigidbody _rb;
     ROSConnection ros;
-    public float publishMessageFrequency = 100f;
+    public float publishMessageFrequency = 200f;
     private float timeElapsed = 0f;
     private Vector3 prevPose;
-
+    private Vector3 start_pose;
+    bool landing = false;
     // Start is called before the first frame update
     void Start()
     {
         _rb = GetComponent<Rigidbody>();
-        transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
+        // transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
+        start_pose = transform.position;
         prevPose = transform.position;
         ros = ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<OdometryMsg>("/drone_state");
@@ -33,6 +36,17 @@ public class DroneMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        Debug.Log(platform.transform.position.x - transform.position.x);
+        Debug.Log(platform.transform.position.y - transform.position.y);
+
+        if (Mathf.Abs(platform.transform.position.x - transform.position.x) <= 0.3 && Mathf.Abs(platform.transform.position.z - transform.position.z) <= 0.3)
+        {
+            Debug.Log("landing");
+            landing = true;
+            velocity.x = 0;
+            velocity.z = 0;
+            velocity.y = -0.5f;
+        }
         _rb.velocity = velocity;
         timeElapsed += Time.fixedDeltaTime;
         if (timeElapsed > 1/publishMessageFrequency)
@@ -55,22 +69,28 @@ public class DroneMovement : MonoBehaviour
             prevPose = currentPose;
             timeElapsed = 0;
         }
+
+
+
+
     }
 
     void UpdateVelocity(TwistMsg vel)
     {
+        if (!landing){
         velocity.x = (float) vel.linear.x;
         velocity.y = (float) vel.linear.z;
-        velocity.z = (float) vel.linear.y;
+        velocity.z = (float) vel.linear.y;}
     }
 
     void Restart(BoolMsg isRestart)
     {
-        transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
+        // transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
+        transform.position = start_pose;
         prevPose = transform.position;
     }
 
-    void OnCollisionStay(Collision collision)
+    void OnCollisionEnter(Collision collision)
     {
         ros.Publish("/collision_detection", new BoolMsg(true));
     }

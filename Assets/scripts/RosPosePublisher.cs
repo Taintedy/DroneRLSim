@@ -18,7 +18,7 @@ public class RosPosePublisher : MonoBehaviour
     {
         ros = ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<PoseMsg>(topic);
-        transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
+        // transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
         ROSConnection.GetOrCreateInstance().Subscribe<BoolMsg>("/restart_request", Restart);
     }
 
@@ -42,6 +42,6 @@ public class RosPosePublisher : MonoBehaviour
 
     void Restart(BoolMsg isRestart)
     {
-        transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
+        // transform.position = new Vector3(Random.Range(lowLim.transform.position.x, higLim.transform.position.x), Random.Range(lowLim.transform.position.y, higLim.transform.position.y), Random.Range(lowLim.transform.position.z, higLim.transform.position.z));
     }
 }
